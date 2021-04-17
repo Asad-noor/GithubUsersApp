@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="github_users">Github Users</string>
+    <string name="string_user_type">(%1$s)</string>
+    <string name="string_site_admin">Site admin: %1$s</string>
 </resources>
