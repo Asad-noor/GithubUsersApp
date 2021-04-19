@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.verapax.stops.route.data.remote.Status
 import com.worldvisionsoft.githubusersapp.R
 import com.worldvisionsoft.githubusersapp.data.model.User
+import com.worldvisionsoft.githubusersapp.ui.custom.NetworkConnectionLiveData
 import kotlinx.android.synthetic.main.fragment_users_list.*
 
 
@@ -40,6 +41,26 @@ class UsersListFragment: Fragment() {
         init()
         setUsersListObserver()
         usersListFragmentViewModel.callUsersList(fromIndex)
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
+        NetworkConnectionLiveData(context ?: return)
+            .observe(viewLifecycleOwner, Observer { isConnected ->
+                if (!isConnected) {
+                    // Internet Not Available
+                    tvNoInternet.visibility = View.VISIBLE
+                    tvNoInternet.text = "No Internet connection"
+                    return@Observer
+                }
+                // Internet Available
+                tvNoInternet.text = "Connected"
+                Handler().postDelayed(
+                    Runnable {
+                        tvNoInternet.visibility = View.GONE
+                    }, 1500)
+            })
     }
 
     private fun init() {
@@ -71,7 +92,9 @@ class UsersListFragment: Fragment() {
                     }
 
                     Status.ERROR -> {
-                        Log.d("tttt", "ui error")
+                        Log.d("tttt", "ui error >"+it.message)
+                        tvNoInternet.visibility = View.VISIBLE
+                        tvNoInternet.text = it.message
                     }
                 }
             }
@@ -97,22 +120,5 @@ class UsersListFragment: Fragment() {
     private fun loadMore() {
         fromIndex += 10
         usersListFragmentViewModel.callUsersList(fromIndex)
-
-//        usersList.add()
-//        usersListAdapter.notifyItemInserted(usersList.size - 1)
-//        val handler = Handler()
-//        handler.postDelayed(Runnable {
-//            usersList.removeAt(usersList.size - 1)
-//            val scrollPosition: Int = usersList.size
-//            usersListAdapter.notifyItemRemoved(scrollPosition)
-//            var currentSize = scrollPosition
-//            val nextLimit = currentSize + 10
-//            while (currentSize - 1 < nextLimit) {
-//                usersList.add("Item $currentSize")
-//                currentSize++
-//            }
-//            usersListAdapter.notifyDataSetChanged()
-//            isLoading = false
-//        }, 2000)
     }
 }

@@ -25,6 +25,12 @@ class UserListRepository : BaseRepository() {
             override fun loadFromDb() = db.userDao().getUsersFromIndex(fromIndex)
 
             override fun createCall() = apiService.getUsers(fromIndex, Constants.DATA_LOAD_PER_PAGE)
+
+            override fun onFetchFailed(throwable: Throwable) {
+                super.onFetchFailed(throwable)
+
+                Log.d("tttt", "msg >"+throwable.message)
+            }
         }.asLiveData()
     }
 }

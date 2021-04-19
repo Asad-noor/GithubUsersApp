@@ -4,6 +4,7 @@ import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
+import java.net.UnknownHostException
 
 /**
  * A generic class that can provide a resource backed by both the sqlite database and the network.
@@ -74,16 +75,34 @@ abstract class NetworkBoundResource<ResultType, RequestType>
                     }
                 }
                 is ApiErrorResponse -> {
-                    onFetchFailed()
-                    result.addSource(dbSource) { newData ->
-                        setValue(Resource.error(response.errorMessage, newData))
+                    when(response.throwable) {
+                        is UnknownHostException -> {
+                            onFetchFailed(response.throwable)
+
+                            result.addSource(dbSource) { newData ->
+                                setValue(Resource.error("No internet connection", null))
+                            }
+
+                            appExecutors.mainThread().execute {
+                                // reload from disk whatever we had
+                                result.addSource(loadFromDb()) { newData ->
+                                    setValue(Resource.success(newData))
+                                }
+                            }
+                        }
+                        else -> {
+                            result.addSource(dbSource) { newData ->
+                                setValue(Resource.error(response.errorMessage, newData))
+                            }
+                        }
                     }
                 }
             }
         }
     }
 
-    protected open fun onFetchFailed() {}
+    protected open fun onFetchFailed(throwable: Throwable) {
+    }
 
     fun asLiveData() = result as LiveData<Resource<ResultType>>
 
