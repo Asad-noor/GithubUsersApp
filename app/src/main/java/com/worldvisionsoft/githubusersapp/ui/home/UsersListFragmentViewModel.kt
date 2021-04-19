@@ -1,6 +1,5 @@
 package com.worldvisionsoft.githubusersapp.ui.home
 
-import android.util.Log
 import androidx.lifecycle.*
 import com.worldvisionsoft.githubusersapp.data.local.AppDatabase
 import com.worldvisionsoft.githubusersapp.data.model.User
@@ -11,8 +10,14 @@ import kotlinx.coroutines.launch
 class UsersListFragmentViewModel: ViewModel() {
 
     private val userListRepository by lazy { UserListRepository() }
-    private val _fromIndex: MutableLiveData<Int> = MutableLiveData()
     private val db by  lazy { AppDatabase.getInstance() }
+
+    private val _fromIndex: MutableLiveData<Int> = MutableLiveData()
+    var searchResultList: MutableLiveData<List<User>>
+
+    init {
+        searchResultList = MutableLiveData()
+    }
 
     //where map can NOT return LiveData object but switchMap can
     //map will take input as LiveData object and returns the type which is wrapped in LiveData<Type>
@@ -34,9 +39,16 @@ class UsersListFragmentViewModel: ViewModel() {
         } else {
             viewModelScope.launch {
                 db.userDao().getLastEntryId().let {
-                    Log.d("tttt", "last >"+it)
                     _fromIndex.value = it
                 }
+            }
+        }
+    }
+
+    fun searchByKeyword(search: String) {
+        viewModelScope.launch {
+            db.userDao().findUserWithName("%"+search+"%").let {
+                searchResultList.value = it
             }
         }
     }

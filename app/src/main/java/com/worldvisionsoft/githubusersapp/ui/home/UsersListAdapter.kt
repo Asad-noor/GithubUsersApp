@@ -4,7 +4,9 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
+import androidx.appcompat.widget.AppCompatImageButton
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -27,6 +29,7 @@ class UsersListAdapter(
         val tvUserName: TextView
         val tvUserType: TextView
         val tvSiteAdmin: TextView
+        val acibNote: AppCompatImageButton
         val acivProfilePic: AppCompatImageView
 
         init {
@@ -35,6 +38,7 @@ class UsersListAdapter(
             tvUserType = view.findViewById(R.id.tvUserType)
             tvSiteAdmin = view.findViewById(R.id.tvSiteAdmin)
             acivProfilePic = view.findViewById(R.id.acivProfilePic)
+            acibNote = view.findViewById(R.id.acibNote)
         }
     }
 
@@ -64,9 +68,19 @@ class UsersListAdapter(
             val siteAdmin = if (item.siteAdmin ?: false) "Yes" else "No"
             holder.tvSiteAdmin.text = context.resources.getString(R.string.string_site_admin, siteAdmin)
 
+            if (item.note != null) {
+                holder.acibNote.visibility = View.VISIBLE
+            } else {
+                holder.acibNote.visibility = View.GONE
+            }
+
             Glide.with(context)
                 .load(item.avatarUrl)
                 .into(holder.acivProfilePic)
+
+            holder.itemView.setOnClickListener {
+                onItemClicked(item)
+            }
         }
     }
 

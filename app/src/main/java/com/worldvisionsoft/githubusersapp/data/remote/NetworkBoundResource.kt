@@ -110,7 +110,7 @@ abstract class NetworkBoundResource<ResultType, RequestType>
     protected open fun processResponse(response: ApiSuccessResponse<RequestType>) = response.body
 
     @WorkerThread
-    protected abstract fun saveCallResult(item: RequestType)
+    protected abstract fun saveCallResult( item: RequestType)
 
     @MainThread
     protected abstract fun shouldFetch(data: ResultType?): Boolean

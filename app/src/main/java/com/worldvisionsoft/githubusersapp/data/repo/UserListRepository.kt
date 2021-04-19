@@ -15,7 +15,33 @@ class UserListRepository : BaseRepository() {
         return object : NetworkBoundResource<List<User>, List<User>>(appExecutors) {
 
             override fun saveCallResult(item: List<User>) {
-                db.userDao().insertList(item)
+                item.forEach { user ->
+                    if (db.userDao().isUserExist(user.id)) {
+                        user.id.let { userId ->
+                            val userOld = db.userDao().getUser(userId)
+
+                            user.note = userOld.note
+                            user.name = userOld.name
+                            user.company = userOld.company
+                            user.blog = userOld.blog
+                            user.location = userOld.location
+                            user.email = userOld.email
+                            user.hireable = userOld.hireable
+                            user.bio = userOld.bio
+                            user.twitterUsername = userOld.twitterUsername
+                            user.publicRepos = userOld.publicRepos
+                            user.publicGists = userOld.publicGists
+                            user.followers = userOld.followers
+                            user.following = userOld.following
+                            user.updatedAt = userOld.updatedAt
+                            user.createdAt = userOld.createdAt
+
+                            db.userDao().update(user)
+                        }
+                    } else {
+                        db.userDao().insert(user)
+                    }
+                }
             }
 
             override fun shouldFetch(data: List<User>?): Boolean {

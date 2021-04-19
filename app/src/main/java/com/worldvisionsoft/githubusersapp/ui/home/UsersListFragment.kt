@@ -9,12 +9,16 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.NavDirections
+import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.verapax.stops.route.data.remote.Status
 import com.worldvisionsoft.githubusersapp.R
 import com.worldvisionsoft.githubusersapp.data.model.User
 import com.worldvisionsoft.githubusersapp.ui.custom.NetworkConnectionLiveData
+import com.worldvisionsoft.githubusersapp.utils.Constants
+import com.worldvisionsoft.githubusersapp.utils.afterTextChanged
 import kotlinx.android.synthetic.main.fragment_users_list.*
 
 
@@ -22,6 +26,7 @@ class UsersListFragment: Fragment() {
 
     private lateinit var usersListAdapter: UsersListAdapter
     private lateinit var usersList: MutableList<User>
+    private lateinit var usersListSavedState: MutableList<User>
     private val usersListFragmentViewModel by activityViewModels<UsersListFragmentViewModel>()
 
     private var isLoading = false
@@ -65,12 +70,27 @@ class UsersListFragment: Fragment() {
 
     private fun init() {
         usersList = mutableListOf()
-        usersListAdapter = UsersListAdapter(usersList, { user ->
+        usersListSavedState = mutableListOf()
 
+        usersListAdapter = UsersListAdapter(usersList, { user ->
+            navigateWithBundle(
+                UsersListFragmentDirections.actionHomeFragmentToUserDetailsFragment(user.login!!)
+            )
         })
 
         rvRepoList.layoutManager = LinearLayoutManager(requireContext())
         rvRepoList.adapter = usersListAdapter
+
+        setLocalSearchObserver()
+        etUserSearch.afterTextChanged {
+            if (it.isEmpty()) {
+                usersList.clear()
+                usersList.addAll(usersListSavedState)
+                usersListAdapter.notifyDataSetChanged()
+            } else {
+                usersListFragmentViewModel.searchByKeyword(it)
+            }
+        }
 
         initScrollListener()
     }
@@ -85,7 +105,11 @@ class UsersListFragment: Fragment() {
 
                     Status.SUCCESS -> {
                         Log.d("tttt", "ui success")
-                        it.data?.let { it1 -> usersList.addAll(it1) }
+                        it.data?.let { it1 ->
+                            usersList.addAll(it1)
+                            usersListSavedState.clear()
+                            usersListSavedState.addAll(it1)
+                        }
                         usersListAdapter.notifyDataSetChanged()
 
                         isLoading = false
@@ -97,6 +121,17 @@ class UsersListFragment: Fragment() {
                         tvNoInternet.text = it.message
                     }
                 }
+            }
+        })
+    }
+
+    private fun setLocalSearchObserver() {
+        usersListFragmentViewModel.searchResultList.observe(viewLifecycleOwner, Observer {
+            it?.let {
+                Log.d("tttt", "List >"+it)
+                usersList.clear()
+                usersList.addAll(it)
+                usersListAdapter.notifyDataSetChanged()
             }
         })
     }
@@ -118,7 +153,11 @@ class UsersListFragment: Fragment() {
     }
 
     private fun loadMore() {
-        fromIndex += 10
+        fromIndex += Constants.DATA_LOAD_PER_PAGE
         usersListFragmentViewModel.callUsersList(fromIndex)
+    }
+
+    private fun navigateWithBundle(navDirections: NavDirections) {
+        NavHostFragment.findNavController(this).navigate(navDirections)
     }
 }

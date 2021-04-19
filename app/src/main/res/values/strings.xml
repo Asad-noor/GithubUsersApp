@@ -3,4 +3,15 @@
     <string name="github_users">Github Users</string>
     <string name="string_user_type">(%1$s)</string>
     <string name="string_site_admin">Site admin: %1$s</string>
+    <string name="search_user">Search user</string>
+    <string name="followers_1_s">Followers: %1$s</string>
+    <string name="following_1_s">Following: %1$s</string>
+    <string name="name_1_s">Name: %1$s</string>
+    <string name="email_1_s">Email: %1$s</string>
+    <string name="age_1_s">Age: %1$s</string>
+    <string name="location_1_s">Location: %1$s</string>
+    <string name="company_1_s">Company: %1$s</string>
+    <string name="blog_1_s">Blog: %1$s</string>
+    <string name="total_repositories_1_s">Total repositories: %1$s</string>
+    <string name="total_gists_1_s">Total gists: %1$s</string>
 </resources>
